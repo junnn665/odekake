@@ -21,15 +21,15 @@
   };
 
   const TAGS = [
-    { id: 'all',     label: 'すべて',       color: '#1F2A44' },
-    { id: 'date',    label: 'デート定番',   color: '#D9466F' },
-    { id: 'yakei',   label: '夜景・展望',   color: '#4338A8' },
-    { id: 'zekkei',  label: '絶景・自然',   color: '#2E7D4F' },
-    { id: 'taiken',  label: '遊ぶ・体験',   color: '#D9661A' },
-    { id: 'art',     label: 'ミュージアム', color: '#7A3FA0' },
-    { id: 'rekishi', label: '歴史・寺社',   color: '#8E2F2F' },
-    { id: 'cafe',    label: '街歩き・名所', color: '#A85A1F' },
-    { id: 'ame',     label: '雨の日OK',     color: '#1D6FA8' }
+    { id: 'all',     label: 'すべて',       color: '#23282C' },
+    { id: 'date',    label: 'デート定番',   color: '#C2364F' },
+    { id: 'yakei',   label: '夜景・展望',   color: '#34418F' },
+    { id: 'zekkei',  label: '絶景・自然',   color: '#3D7A3A' },
+    { id: 'taiken',  label: '遊ぶ・体験',   color: '#C75F14' },
+    { id: 'art',     label: 'ミュージアム', color: '#714A8C' },
+    { id: 'rekishi', label: '歴史・寺社',   color: '#A1372A' },
+    { id: 'cafe',    label: '街歩き・名所', color: '#80612F' },
+    { id: 'ame',     label: '雨の日OK',     color: '#2D6BA8' }
   ];
   const TAG_MAP = Object.fromEntries(TAGS.map(t => [t.id, t]));
 
@@ -135,7 +135,7 @@
         const lat = +pos.coords.latitude.toFixed(5), lng = +pos.coords.longitude.toFixed(5);
         const { pref, town } = await reverseLookup(lat, lng);
         resolve({ lat, lng, pref, label: (town ? prefShort(pref) + '・' + town : '現在地（' + prefShort(pref) + '）') + ' 付近', src: 'gps' });
-      }, () => reject(new Error('現在地を取得できませんでした。ブラウザの位置情報の許可を確認してください')),
+      }, () => reject(new Error('現在地を取得できませんでした。ブラウザの設定で位置情報を許可してください')),
       { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
     });
   }
@@ -143,7 +143,7 @@
   // 地名・駅名から場所を探す（国土地理院 → だめなら OpenStreetMap Nominatim）
   async function searchPlace(q) {
     q = q.trim();
-    if (!q) throw new Error('地名を入れてください');
+    if (!q) throw new Error('地名か駅名を入力してください');
     let hit = null;
     try {
       const r = await fetchJSON('https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(q), 8000);
@@ -158,7 +158,7 @@
         if (Array.isArray(r) && r.length) hit = { lat: +r[0].lat, lng: +r[0].lon, title: r[0].display_name || q };
       } catch (e) { /* 見つからない */ }
     }
-    if (!hit) throw new Error('「' + q + '」が見つかりませんでした。市区町村名や駅名で試してください');
+    if (!hit) throw new Error('「' + q + '」は見つかりませんでした。市区町村名か駅名で入力してください');
     const pref = (PREFS.find(p => hit.title.startsWith(p[0])) || [])[0] || nearestPref(hit.lat, hit.lng);
     return { lat: +hit.lat.toFixed(5), lng: +hit.lng.toFixed(5), pref, label: q + ' 付近', src: 'search' };
   }
@@ -180,26 +180,26 @@
     el.classList.add('locbar');
     el.innerHTML =
       '<div class="loc-now">' + icon('all', 'loc-pin') +
-        '<span class="loc-text"><small>さがす場所</small><b class="loc-label">まだ決まっていません</b></span></div>' +
+        '<span class="loc-text"><small>どこから探す？</small><b class="loc-label">未設定</b></span></div>' +
       '<div class="loc-actions">' +
         '<button type="button" class="loc-btn loc-gps">' + icon('gps', 'ic-s') + '現在地</button>' +
         '<label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-pref">都道府県</label>' +
-        '<select class="loc-pref" id="' + (opts.idPrefix || 'lb') + '-pref"><option value="">都道府県から</option>' +
+        '<select class="loc-pref" id="' + (opts.idPrefix || 'lb') + '-pref"><option value="">都道府県</option>' +
           PREFS.map(p => '<option value="' + p[0] + '">' + p[0] + '</option>').join('') + '</select>' +
         '<form class="loc-search" role="search"><label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-q">地名・駅名</label>' +
-          '<input id="' + (opts.idPrefix || 'lb') + '-q" type="search" placeholder="地名・駅名（例：横浜、京都駅）" enterkeyhint="search" autocomplete="off">' +
+          '<input id="' + (opts.idPrefix || 'lb') + '-q" type="search" placeholder="地名・駅名" enterkeyhint="search" autocomplete="off">' +
           '<button type="submit" class="loc-btn">探す</button></form>' +
       '</div>';
     const label = el.querySelector('.loc-label');
     function show() {
       const loc = getLoc();
-      label.textContent = loc ? loc.label : 'まだ決まっていません';
+      label.textContent = loc ? loc.label : '未設定';
       el.classList.toggle('is-empty', !loc);
       el.querySelector('.loc-pref').value = '';
     }
     async function run(p, btn) {
       const old = btn ? btn.innerHTML : '';
-      if (btn) { btn.disabled = true; btn.textContent = '調べています…'; }
+      if (btn) { btn.disabled = true; btn.textContent = '検索中…'; }
       try { setLoc(await p); } catch (e) { toast(e.message); } finally { if (btn) { btn.disabled = false; btn.innerHTML = old; } }
     }
     el.querySelector('.loc-gps').addEventListener('click', e => run(locateMe(), e.currentTarget));
@@ -278,7 +278,7 @@
         .then(r => r.ok ? r.json() : { spots: [] })
         .then(d => d.spots.map(s => Object.assign({}, s, {
           pref: s.pref || (s.area === '名古屋' ? '愛知県' : s.area + '県'),
-          kind: s.kind || '編集部のおすすめ', curated: true, score: 12
+          kind: s.kind || 'おすすめ', curated: true, score: 12
         })))
         .catch(() => []);
     }
@@ -306,7 +306,7 @@
           break;
         } catch (e) { lastErr = e; }
       }
-      if (!elements) throw new Error('スポットを探せませんでした（地図データのサーバーが混み合っています）。少し待ってからもう一度お試しください。' + (lastErr ? '' : ''));
+      if (!elements) throw new Error('地図データのサーバーが混んでいて、スポットを取得できませんでした。少し待ってから再読み込みしてください。');
       // 保存は軽くするため、使うタグだけ
       const KEEP = ['name', 'name:ja', 'tourism', 'amenity', 'leisure', 'historic', 'natural', 'waterway', 'man_made', 'tower:type', 'religion', 'wikipedia', 'wikidata', 'fee', 'addr:city', 'addr:province', 'website'];
       elements = elements.map(el => {
@@ -333,7 +333,7 @@
     });
     let list = Object.values(byName);
 
-    // 編集部のおすすめ（data/spots.json）を合わせる
+    // 手で選んだおすすめ（data/spots.json）を合わせる
     const curated = (await loadCurated()).filter(c => distanceKm(loc, c) <= km);
     curated.forEach(c => {
       const cn = normName(c.name);
@@ -472,42 +472,39 @@
   function saveButton(s) {
     const saved = isSaved(s.id);
     return '<button type="button" class="save-btn" data-save="' + esc(s.id) + '" aria-pressed="' + saved + '">' + heart() +
-      '<span>' + (saved ? '行きたい済み' : '行きたい') + '</span></button>';
+      '<span>行きたい</span></button>';
   }
 
   function spotCard(s, opts) {
     opts = opts || {};
     const t = primaryTag(s);
-    const season = inSeason(s) ? '<span class="badge-season">いま見頃</span>' : '';
-    const pick = s.curated ? '<span class="badge-pick">編集部おすすめ</span>' : '';
-    const tags = s.tags.map(id => TAG_MAP[id] ? '<span class="chip" style="--c:' + TAG_MAP[id].color + '">' + icon(id, 'ic-s') + esc(TAG_MAP[id].label) + '</span>' : '').join('');
-    const meta = [];
-    if (s.dist != null) meta.push(['距離', distText(s.dist)]);
-    if (s.budget != null) meta.push(['予算', '<b>' + BUDGET_MARK[s.budget] + '</b> ' + BUDGET[s.budget]]);
-    if (s.stay) meta.push(['滞在', esc(s.stay)]);
-    if (s.when && s.when.length) meta.push(['時間帯', esc(s.when.join('・'))]);
-    if (s.curated) meta.push(['見頃', esc(seasonText(s.best))]);
-    const where = [prefShort(s.pref), s.city].filter(Boolean).join('・');
+    const where = [prefShort(s.pref), s.city].filter(Boolean).join(' ');
+    const flags = (inSeason(s) ? '<span class="flag flag-season">見頃</span>' : '') + (s.curated ? '<span class="flag">おすすめ</span>' : '');
+    const facts = [];
+    if (s.stay) facts.push('滞在 ' + esc(s.stay));
+    if (s.when && s.when.length) facts.push(esc(s.when.join('・')));
+    if (s.budget != null) facts.push(BUDGET[s.budget]);
+    if (s.curated && s.best && s.best.length) facts.push('見頃 ' + esc(seasonText(s.best)));
     const wikiLink = s.descSrc === 'wiki' && s.wikiTitle
-      ? '<a class="src-link" href="https://ja.wikipedia.org/wiki/' + encodeURIComponent(s.wikiTitle) + '" target="_blank" rel="noopener">（Wikipedia）</a>' : '';
+      ? ' <a class="src-link" href="https://ja.wikipedia.org/wiki/' + encodeURIComponent(s.wikiTitle) + '" target="_blank" rel="noopener">Wikipedia</a>' : '';
+    const dist = s.dist != null ? distText(s.dist) : '';
+    const distHtml = dist ? '<p class="spot-dist">' + dist.replace(/(km|m)$/, '<small>$1</small>') + '</p>' : '';
     return '' +
-      '<article class="ticket" style="--c:' + t.color + '" data-id="' + esc(s.id) + '">' +
-        '<div class="ticket-top">' +
-          '<span class="ticket-area">' + esc(s.kind || where) + '<small>' + esc(s.kind ? where : '') + '</small></span>' +
-          season + pick +
-          '<span class="ticket-icon">' + icon(t.id) + '</span>' +
+      '<article class="spot" style="--c:' + t.color + '" data-id="' + esc(s.id) + '">' +
+        '<div class="spot-mark" title="' + esc(t.label) + '">' + icon(t.id) + '</div>' +
+        '<div class="spot-main">' +
+          '<p class="spot-kind">' + esc(s.kind || '') + (where ? '<span>' + esc(where) + '</span>' : '') + flags + '</p>' +
+          '<h3 class="spot-name">' + esc(s.name) + '</h3>' +
+          (s.desc ? '<p class="spot-desc">' + esc(s.desc) + wikiLink + '</p>' : '') +
+          (s.tip ? '<p class="spot-tip">' + esc(s.tip) + '</p>' : '') +
+          (facts.length ? '<p class="spot-facts">' + facts.join('<span class="sep">／</span>') + '</p>' : '') +
+          '<div class="spot-actions">' + saveButton(s) +
+            (opts.noMapLink ? '' : '<a class="act-link" href="map.html?id=' + encodeURIComponent(s.id) + '">地図</a>') +
+            '<a class="act-link" href="' + gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ</a>' +
+          '</div>' +
         '</div>' +
-        (s.img ? '<div class="ticket-img"><img src="' + esc(s.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>' : '') +
-        '<div class="ticket-body">' +
-          '<h3 class="ticket-name">' + esc(s.name) + '</h3>' +
-          (s.desc ? '<p class="ticket-desc">' + esc(s.desc) + wikiLink + '</p>' : '') +
-          (meta.length ? '<dl class="ticket-meta">' + meta.map(m => '<div><dt>' + m[0] + '</dt><dd>' + m[1] + '</dd></div>').join('') + '</dl>' : '') +
-          (s.tip ? '<p class="ticket-tip"><span>ふたりで行くなら</span>' + esc(s.tip) + '</p>' : '') +
-          '<div class="chips">' + tags + '</div>' +
-        '</div>' +
-        '<div class="ticket-stub">' + saveButton(s) +
-          (opts.noMapLink ? '' : '<a class="stub-link" href="map.html?id=' + encodeURIComponent(s.id) + '">地図で見る</a>') +
-          '<a class="stub-link" href="' + gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ ↗</a>' +
+        '<div class="spot-side">' + distHtml +
+          (s.img ? '<div class="spot-img"><img src="' + esc(s.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>' : '') +
         '</div>' +
       '</article>';
   }
@@ -515,7 +512,7 @@
   // 説明・写真が届いたカードを描き直す
   function refreshCards(root, list, opts) {
     list.forEach(s => {
-      root.querySelectorAll('.ticket[data-id="' + CSS.escape(s.id) + '"]').forEach(el => {
+      root.querySelectorAll('.spot[data-id="' + CSS.escape(s.id) + '"]').forEach(el => {
         const tmp = document.createElement('div');
         tmp.innerHTML = spotCard(s, opts);
         el.replaceWith(tmp.firstChild);
@@ -532,9 +529,8 @@
     document.querySelectorAll('[data-save="' + CSS.escape(b.dataset.save) + '"]').forEach(x => {
       x.setAttribute('aria-pressed', on);
       const sp = x.querySelector('span');
-      if (sp) sp.textContent = on ? '行きたい済み' : '行きたい';
     });
-    toast(on ? '行きたいリストに入れました' : '行きたいリストから外しました');
+    toast(on ? '行きたいリストに追加しました' : '行きたいリストから外しました');
   });
 
   let toastTimer;

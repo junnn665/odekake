@@ -1,33 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs>
- <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#2B3A67"/>
-  <stop offset=".28" stop-color="#7A4E86"/>
-  <stop offset=".55" stop-color="#FF7A59"/>
-  <stop offset=".8" stop-color="#FFB45E"/>
- </linearGradient>
- <radialGradient id="sun" cx=".5" cy=".5" r=".5">
-  <stop offset="0" stop-color="#FFF4D6"/><stop offset=".7" stop-color="#FFE0A3"/><stop offset="1" stop-color="#FFD08A"/>
- </radialGradient>
- <linearGradient id="pin" x1="0" y1="0" x2="0" y2="1">
-  <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFEFE6"/>
- </linearGradient>
- <clipPath id="c"><rect width="512" height="512"/></clipPath>
-</defs>
+<defs><clipPath id="c"><rect width="512" height="512"/></clipPath></defs>
 <g clip-path="url(#c)">
- <rect width="512" height="512" fill="url(#sky)"/>
- <circle cx="256" cy="372" r="118" fill="url(#sun)" opacity=".95"/>
- <g fill="#fff">
-  <circle cx="92" cy="96" r="4"/><circle cx="420" cy="78" r="5"/><circle cx="452" cy="170" r="3"/><circle cx="64" cy="190" r="3"/>
-  <path d="M392 120l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/>
+ <rect width="512" height="512" fill="#F6F7F2"/>
+ <g fill="none" stroke="#B98B5E" stroke-width="5" opacity=".7">
+  <path d="M256 92c92 0 170 52 178 132s-60 168-178 176S68 330 76 236 164 92 256 92z"/>
+  <path d="M256 44c120 0 214 70 222 176S392 444 252 452 26 360 34 232 136 44 256 44z"/>
+  <path d="M256 -6c150 0 262 88 270 222s-102 286-276 292S-24 386-14 226 106-6 256-6z"/>
+  <path d="M-30 520c60-40 140-20 200-36"/>
  </g>
- <path fill="#1F2A44" d="M0 512V420h26v-18h22v18h18v-44h26v136h10v-74h30v-22h20v96h14V352h8v-30h4v30h10v160h16v-82h28v82h14v-70h34v70h10v-52h22v-22h16v74h18v-96h10v-28l14-10 14 10v28h10v124h14v-84h26v84h14v-62h28v62h14v-110h24v110h12v-72h22v-16h18v88h16v-60h26v60z"/>
- <path fill="#FFD27A" opacity=".9" d="M130 448h6v8h-6zM130 466h6v8h-6zM278 430h6v8h-6zM278 450h6v8h-6zM298 450h6v8h-6zM376 438h6v8h-6zM392 458h6v8h-6zM70 470h6v8h-6zM444 476h6v8h-6z"/>
- <g transform="translate(256 228)">
-  <path d="M0 132C-18 104-96 30-96-38a96 96 0 0 1 192 0C96 30 18 104 0 132z" fill="#1F2A44" opacity=".25" transform="translate(6 8)"/>
-  <path d="M0 132C-18 104-96 30-96-38a96 96 0 0 1 192 0C96 30 18 104 0 132z" fill="url(#pin)" stroke="#1F2A44" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M0 22C-14 12-50-10-50-40a26 26 0 0 1 50-10a26 26 0 0 1 50 10C50-10 14 12 0 22z" fill="#D9466F"/>
-  <path d="M-30-48a12 12 0 0 1 14-6" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".8"/>
+ <g fill="none" stroke="#2D6BA8" stroke-width="7" opacity=".55" stroke-linecap="round">
+  <path d="M-10 448c60-16 110 6 160-8s90-40 150-30 120 40 222 18"/>
+ </g>
+ <g transform="translate(256 236)">
+  <path d="M0 150C-22 118-104 40-104-36a104 104 0 0 1 208 0C104 40 22 118 0 150z" fill="#23282C"/>
+  <circle cx="0" cy="-36" r="66" fill="#F6F7F2"/>
+  <path d="M0 6C-14-4-44-24-44-50a22 22 0 0 1 44-8a22 22 0 0 1 44 8C44-24 14-4 0 6z" fill="#C2364F"/>
  </g>
 </g>
 </svg>

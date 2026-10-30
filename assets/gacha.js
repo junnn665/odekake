@@ -8,7 +8,7 @@
     tag: { el: 'g-tag', items: [['any', 'おまかせ']].concat(O.TAGS.filter(t => t.id !== 'all' && t.id !== 'ame').map(t => [t.id, t.label])) },
     weather: { el: 'g-weather', items: [['fine', '晴れ・くもり'], ['rain', '雨']] },
     when: { el: 'g-when', items: [['any', 'いつでも'], ['day', '昼'], ['night', '夕方〜夜']] },
-    fame: { el: 'g-fame', items: [['famous', '有名どころ'], ['any', '穴場もOK']] }
+    fame: { el: 'g-fame', items: [['famous', '有名なところ'], ['any', 'こだわらない']] }
   };
   const SAVE_KEY = 'odekake.gacha2';
   const state = { tag: 'any', weather: 'fine', when: 'any', fame: 'famous' };
@@ -51,13 +51,13 @@
   function updateNote() {
     const loc = O.getLoc();
     let msg = '', ok = false;
-    if (!loc) msg = '上で、さがす場所を決めてください';
-    else if (loading) msg = 'まわりのスポットを探しています…';
+    if (!loc) msg = '先に場所を決めてください';
+    else if (loading) msg = '探しています…';
     else if (errorMsg) msg = errorMsg;
     else {
       const n = pool().length;
       ok = n > 0;
-      msg = n ? loc.label + 'の候補 ' + n + ' か所から選びます' : '条件に合う場所がありません。範囲を広げるか、条件をゆるめてみてください';
+      msg = n ? '候補 ' + n + 'か所' : '条件に合う場所がありません。範囲を広げるか、条件を変えてください';
     }
     $('pool-note').textContent = msg;
     $('spin').disabled = !ok;
@@ -121,14 +121,14 @@
   function showResult(main) {
     const next = nextStop(main);
     const shown = [main].concat(next ? [next.s] : []);
-    let html = '<div class="result-head"><h2>今日の行き先は…</h2><span class="result-sub">' + O.esc(main.kind || '') + '・ここから' + O.esc(O.distText(main.dist)) + '</span></div>';
+    let html = '<div class="result-head"><h2>今日の行き先</h2></div>';
     html += O.spotCard(main);
     if (next) {
-      html += '<div class="route"><span class="route-arrow">↓</span><span>' + O.esc(next.label) + '　<b>' + O.esc(next.s.name) + '</b>（約' + O.esc(O.distText(next.d)) + '）</span></div>';
+      html += '<div class="route"><span>' + O.esc(next.label) + '　<b>' + O.esc(next.s.name) + '</b>（そこから' + O.esc(O.distText(next.d)) + '）</span></div>';
       html += O.spotCard(next.s);
     }
     html += '<div class="result-actions"><button type="button" id="again">もう1回まわす</button>' +
-      '<a href="map.html?id=' + encodeURIComponent(main.id) + '">地図で周辺を見る</a></div>';
+      '<a href="map.html?id=' + encodeURIComponent(main.id) + '">地図で見る</a></div>';
     $('result').innerHTML = html;
     $('again').addEventListener('click', spin);
     O.enrich(shown).then(changed => { if (changed) O.refreshCards($('result'), shown); });

@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>デートガチャ｜おでかけ日和</title>
+<title>デートガチャ - おでかけ日和</title>
 <meta name="description" content="いる場所・気分・天気・時間帯を選ぶと、近くのデートスポットと次に寄る場所を提案します。全国どこでも使えます">
-<meta name="theme-color" content="#1F2A44">
+<meta name="theme-color" content="#F6F7F2">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -34,7 +34,7 @@
     <fieldset class="field"><legend>気分</legend><div class="seg" id="g-tag"></div></fieldset>
     <fieldset class="field"><legend>天気</legend><div class="seg" id="g-weather"></div></fieldset>
     <fieldset class="field"><legend>時間帯</legend><div class="seg" id="g-when"></div></fieldset>
-    <fieldset class="field"><legend>どんな場所</legend><div class="seg" id="g-fame"></div></fieldset>
+    <fieldset class="field"><legend>知名度</legend><div class="seg" id="g-fame"></div></fieldset>
 
     <div class="machine" id="machine" aria-hidden="true">
       <div class="machine-dome" id="dome"></div>
@@ -46,17 +46,16 @@
 
   <section class="result" id="result" aria-live="polite">
     <div class="result-placeholder">
-      <b>今日はどこへ行こう？</b>
-      さがす場所と条件を選んでガチャを回すと、行き先と「そのあと寄れる近くの場所」を出します。
+      <b>まだ回していません</b>
+      条件を選んで回すと、行き先と、そのあと寄れる近くの場所が出ます。
     </div>
   </section>
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>スポットは OpenStreetMap の地図データから自動で探しています。営業時間・料金・休業日は変わることがあるので、お出かけ前に公式サイトでご確認ください。</p>
-    <p>地図データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>／位置の検索 国土地理院</p>
-    <p>© おでかけ日和</p>
+    <p>個人が趣味で作っている非公式サイトです。営業時間や料金は変わることがあるので、行く前に公式サイトで確認してください。</p>
+    <p>地図データ <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>、説明と写真 Wikipedia、位置検索 国土地理院</p>
   </div>
 </footer>
 

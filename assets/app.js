@@ -67,23 +67,23 @@
     const grid = $('grid');
     $('more').hidden = true;
     $('spots-heading').textContent = state.savedOnly ? '行きたいリスト' : '近くのスポット';
-    $('spots-sub').textContent = state.savedOnly ? 'この端末に保存しています' : (loc ? loc.label + 'から' + O.getRadius() + 'km以内' : '');
+    $('spots-sub').textContent = state.savedOnly ? 'この端末に保存' : (loc ? O.getRadius() + 'km以内' : '');
 
     if (!state.savedOnly) {
       if (!loc) {
         $('result-note').textContent = '';
-        grid.innerHTML = '<div class="prompt"><b>まず、さがす場所を決めましょう</b>' +
-          '<p>上の「現在地」を押すか、都道府県・地名を選ぶと、そのまわりのデート＆観光スポットを地図データから探します。</p></div>';
+        grid.innerHTML = '<div class="prompt"><b>場所を決めると、ここに近くのスポットが出ます</b>' +
+          '<p>上の「現在地」を押すか、都道府県か地名を入れてください。</p></div>';
         return;
       }
       if (loading) {
         $('result-note').textContent = '';
-        grid.innerHTML = '<div class="prompt loading"><span class="spinner" aria-hidden="true"></span><b>近くのスポットを探しています…</b><p>はじめての場所は10〜20秒ほどかかることがあります。</p></div>';
+        grid.innerHTML = '<div class="prompt loading"><span class="spinner" aria-hidden="true"></span><b>探しています…</b><p>はじめての場所は10〜20秒かかることがあります。</p></div>';
         return;
       }
       if (errorMsg) {
         $('result-note').textContent = '';
-        grid.innerHTML = '<div class="prompt"><b>うまく探せませんでした</b><p>' + O.esc(errorMsg) + '</p><button type="button" class="more" id="retry">もう一度探す</button></div>';
+        grid.innerHTML = '<div class="prompt"><b>スポットを取得できませんでした</b><p>' + O.esc(errorMsg) + '</p><button type="button" class="more" id="retry">もう一度探す</button></div>';
         $('retry').addEventListener('click', search);
         return;
       }
@@ -99,8 +99,8 @@
     $('result-note').textContent = list.length ? note : '';
     if (!list.length) {
       grid.innerHTML = '<p class="empty">' + (state.savedOnly && !O.getSaved().length
-        ? 'まだ行きたいリストは空です。気になるスポットの「行きたい」を押すと、ここに集まります（全国どこのスポットでも入れられます）。'
-        : '条件に合うスポットが見つかりませんでした。気分を変えるか、範囲を広げてみてください。') + '</p>';
+        ? '行きたいリストは空です。スポットの「行きたい」を押すと追加されます。'
+        : '条件に合うスポットはありません。ジャンルを変えるか、範囲を広げてください。') + '</p>';
       return;
     }
     // 説明と写真をあとから入れる
@@ -114,17 +114,14 @@
       const m = O.nowMonth();
       const list = cur.filter(s => O.inSeason(s, m) && (!loc || O.distanceKm(loc, s) <= 150));
       if (!list.length || !loc) { $('season').hidden = true; return; }
-      const mark = m >= 3 && m <= 5 ? '🌸' : m >= 6 && m <= 8 ? '🎆' : m >= 9 && m <= 11 ? '🍁' : '❄️';
-      $('season').querySelector('.leaf').textContent = mark;
-      $('season-title').textContent = m + '月がいま見頃';
+      $('season-title').textContent = m + '月が見頃';
       O.register(list);
       $('season-row').innerHTML = list.map(s => {
         const t = O.primaryTag(s);
         return '<a class="mini" href="map.html?id=' + encodeURIComponent(s.id) + '" data-jump="' + s.id + '" style="--c:' + t.color + '">' +
-          '<span class="mini-icon">' + O.icon(t.id) + '</span>' +
-          '<span class="mini-area">' + O.esc(O.prefShort(s.pref)) + '・' + O.esc(O.distText(O.distanceKm(loc, s))) + '</span>' +
+                    '<span class="mini-area">' + O.esc(O.prefShort(s.pref)) + ' ' + O.esc(O.distText(O.distanceKm(loc, s))) + '</span>' +
           '<b>' + O.esc(s.name) + '</b>' +
-          '<span class="mini-when">見頃 ' + O.esc(O.seasonText(s.best)) + '</span></a>';
+          '<span class="mini-when">' + O.esc(O.seasonText(s.best)) + '</span></a>';
       }).join('');
       $('season').hidden = false;
     });
@@ -211,7 +208,7 @@
     const n = loc ? news.filter(x => itemPref(x) === loc.pref).length : 0;
     if (!loc) newsScope = 'all';
     else if (newsScope === 'pref' && !n && news.length) newsScope = 'all';
-    $('news-scope').innerHTML = (loc ? '<button type="button" class="nf" data-scope="pref" aria-pressed="' + (newsScope === 'pref') + '">' + O.esc(O.prefShort(loc.pref)) + 'の話題 <small>' + n + '</small></button>' : '') +
+    $('news-scope').innerHTML = (loc ? '<button type="button" class="nf" data-scope="pref" aria-pressed="' + (newsScope === 'pref') + '">' + O.esc(O.prefShort(loc.pref)) + ' <small>' + n + '</small></button>' : '') +
       '<button type="button" class="nf" data-scope="all" aria-pressed="' + (newsScope === 'all') + '">全国 <small>' + news.length + '</small></button>';
     renderNewsFilter(); renderNews();
   }
@@ -234,7 +231,7 @@
     }).join('');
     $('news-more').hidden = list.length <= newsShown;
     $('news-status').hidden = list.length > 0;
-    if (!list.length) $('news-status').textContent = news.length ? 'この条件のニュースはまだありません。' : 'ニュースはまだありません。次の自動更新のあとに表示されます。';
+    if (!list.length) $('news-status').textContent = news.length ? 'この条件のニュースはありません。' : 'ニュースはまだありません。';
   }
 
   $('news-scope').addEventListener('click', e => {
@@ -251,8 +248,8 @@
     news = d.items || [];
     if (d.updated) {
       const u = new Date(d.updated);
-      $('news-updated').textContent = (u.getMonth() + 1) + '/' + u.getDate() + ' ' + u.getHours() + ':' + String(u.getMinutes()).padStart(2, '0') + ' 更新';
+      $('news-updated').textContent = (u.getMonth() + 1) + '月' + u.getDate() + '日 ' + u.getHours() + ':' + String(u.getMinutes()).padStart(2, '0') + ' 更新（6時間ごと）';
     }
     loadNewsScope();
-  }).catch(() => { $('news-status').textContent = 'ニュースを読み込めませんでした。'; });
+  }).catch(() => { $('news-status').textContent = 'ニュースを読み込めませんでした。再読み込みしてください。'; });
 })();

@@ -32,14 +32,14 @@
   }
 
   function popupHtml(s) {
-    const meta = [s.kind, s.dist != null ? 'ここから' + O.distText(s.dist) : '', s.stay ? '滞在 ' + s.stay : ''].filter(Boolean).join('・');
+    const meta = [s.kind, s.dist != null ? O.distText(s.dist) : ''].filter(Boolean).join('　');
     return '<div class="pop">' +
       (s.img ? '<img class="pop-img" src="' + O.esc(s.img) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
-      '<div class="pop-area">' + O.esc(meta) + (O.inSeason(s) ? '　<b style="color:#D9466F">いま見頃</b>' : '') + (s.curated ? '　<b style="color:#FF7A59">編集部おすすめ</b>' : '') + '</div>' +
+      '<div class="pop-area">' + O.esc(meta) + (O.inSeason(s) ? '<span class="flag flag-season">見頃</span>' : '') + (s.curated ? '<span class="flag">おすすめ</span>' : '') + '</div>' +
       '<h3>' + O.esc(s.name) + '</h3>' +
       (s.desc ? '<p>' + O.esc(s.desc) + '</p>' : '') +
       '<div class="pop-actions">' + O.saveButton(s) +
-        '<a class="stub-link" href="' + O.gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ ↗</a>' +
+        '<a class="act-link" href="' + O.gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ</a>' +
       '</div></div>';
   }
 
@@ -103,8 +103,8 @@
     const my = ++seq;
     drawArea();
     $('here').hidden = true;
-    if (!loc) { $('map-status').textContent = '上で、さがす場所を決めてください'; spots = []; renderTabs(); renderMarkers(false); return; }
-    $('map-status').textContent = 'スポットを探しています…';
+    if (!loc) { $('map-status').textContent = '先に場所を決めてください'; spots = []; renderTabs(); renderMarkers(false); return; }
+    $('map-status').textContent = '探しています…';
     if (!focusId) map.fitBounds(circle.getBounds(), { padding: [10, 10] });
     try {
       const list = await O.searchSpots(loc, O.getRadius());
@@ -147,7 +147,7 @@
   });
   $('here').addEventListener('click', async () => {
     const c = map.getCenter();
-    $('here').disabled = true; $('here').textContent = '調べています…';
+    $('here').disabled = true; $('here').textContent = '検索中…';
     try {
       // 今の表示範囲がおさまる範囲で探す
       const b = map.getBounds();
@@ -170,7 +170,7 @@
     O.setRadius(Number(b.dataset.radius));
   });
   $('saved-toggle').addEventListener('click', () => {
-    if (!state.savedOnly && !O.getSaved().length) { O.toast('まだ行きたいリストは空です'); return; }
+    if (!state.savedOnly && !O.getSaved().length) { O.toast('行きたいリストは空です'); return; }
     state.savedOnly = !state.savedOnly; $('here').hidden = true; renderTabs(); renderMarkers(true);
   });
   document.addEventListener('saved-change', e => {

@@ -1,272 +1,178 @@
-/* おでかけ日和: トップページ（日和との会話で行き先を決める） */
+/* おでかけ日和: トップページ */
 (function () {
   'use strict';
   const O = window.Odekake;
   const $ = id => document.getElementById(id);
-  const log = $('chat');
-  const choicesEl = $('choices');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const PAGE = 24;
 
-  let spots = [];
-  let queue = [];
-  let idx = 0;
-  let moodLabel = '';
+  const state = { tag: 'all', q: '', savedOnly: false, sort: 'rec', shown: PAGE };
+  let spots = [];        // いまの場所のまわりのスポット
+  let loading = false;
+  let errorMsg = '';
+  let searchSeq = 0;
 
-  /* ---------- 会話の部品 ---------- */
-  function scrollEnd() {
-    const target = choicesEl.children.length ? choicesEl : log.lastElementChild;
-    if (!target) return;
-    const r = target.getBoundingClientRect();
-    if (r.bottom > window.innerHeight - 12 || r.top < 0) {
-      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'end' });
+  O.mountLocBar($('locbar'), { idPrefix: 'top' });
+
+  /* ---------- スポット ---------- */
+  function source() {
+    if (!state.savedOnly) return spots;
+    const loc = O.getLoc();
+    const list = O.getSavedList().map(s => Object.assign({}, s, { dist: loc ? O.distanceKm(loc, s) : null }));
+    O.register(list);
+    return list;
+  }
+
+  function matches(s, ignoreTag) {
+    if (!ignoreTag && state.tag !== 'all' && !s.tags.includes(state.tag)) return false;
+    if (state.q) {
+      const hay = [s.name, s.kind, s.pref, s.city, s.desc, s.tip, s.tags.map(t => (O.TAG_MAP[t] || {}).label).join(' ')].join(' ');
+      if (!state.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
     }
-  }
-  function addRow(cls, inner) {
-    const row = document.createElement('div');
-    row.className = 'row ' + cls;
-    row.innerHTML = inner;
-    log.appendChild(row);
-    return row;
-  }
-  // 日和が話す（少し間をおいてから）
-  async function bot(html, fast) {
-    const row = addRow('bot', '<div class="face" aria-hidden="true"></div><div class="bb"><span class="typing" aria-label="入力中"><i></i><i></i><i></i></span></div>');
-    scrollEnd();
-    await wait(fast ? 200 : 520);
-    row.querySelector('.bb').innerHTML = html;
-    scrollEnd();
-    return row;
-  }
-  function me(text) {
-    addRow('me', '<div class="bb">' + O.esc(text) + '</div>');
-    scrollEnd();
-  }
-  function clearChoices() { choicesEl.innerHTML = ''; }
-  // 答えの候補を出す。押すと自分の吹き出しになって次へ進む
-  function choices(items, extra) {
-    clearChoices();
-    items.forEach(it => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip' + (it.main ? ' chip-main' : '');
-      b.innerHTML = O.esc(it.label) + (it.n != null ? '<small>' + it.n + '</small>' : '');
-      b.addEventListener('click', () => { clearChoices(); me(it.say || it.label); it.go(); });
-      choicesEl.appendChild(b);
-    });
-    if (extra) choicesEl.appendChild(extra);
-    scrollEnd();
-  }
-  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-  /* ---------- 場所 ---------- */
-  async function askLoc(text) {
-    await bot(text || 'いま どのへん？');
-    const box = document.createElement('div');
-    box.className = 'loc-form';
-    box.innerHTML =
-      '<form class="loc-search"><input type="search" placeholder="駅名・地名" aria-label="駅名・地名" enterkeyhint="search" autocomplete="off"><button type="submit">さがす</button></form>' +
-      '<select aria-label="都道府県からえらぶ"><option value="">都道府県からえらぶ</option>' +
-      O.PREFS.map(p => '<option>' + p[0] + '</option>').join('') + '</select>';
-    choices([{ label: '現在地をつかう', main: true, go: () => findLoc(O.locateMe(), '現在地を しらべてるね…') }], box);
-    box.querySelector('form').addEventListener('submit', e => {
-      e.preventDefault();
-      const q = box.querySelector('input').value.trim();
-      if (!q) return;
-      clearChoices(); me(q);
-      findLoc(O.searchPlace(q), '「' + O.esc(q) + '」を さがしてるね…');
-    });
-    box.querySelector('select').addEventListener('change', e => {
-      const l = O.prefLoc(e.target.value);
-      if (!l) return;
-      clearChoices(); me(e.target.value);
-      gotLoc(l);
-    });
+    return true;
   }
 
-  async function findLoc(promise, waitingText) {
-    await bot(waitingText, true);
-    try {
-      gotLoc(await promise);
-    } catch (e) {
-      await bot(O.esc(e.message));
-      askLoc('ほかの言い方で さがしてみる？');
+  function renderTabs() {
+    const src = source();
+    $('tabs').innerHTML = O.TAGS.map(t => {
+      const n = src.filter(s => (t.id === 'all' || s.tags.includes(t.id)) && matches(s, true)).length;
+      return '<button type="button" class="tab" style="--c:' + t.color + '" data-tag="' + t.id + '" aria-pressed="' + (state.tag === t.id) + '">' +
+        O.icon(t.id, 'tab-icon') + '<span class="tab-label">' + O.esc(t.label) + '</span><span class="count">' + n + '</span></button>';
+    }).join('');
+  }
+
+  function renderTools() {
+    const r = O.getRadius();
+    $('radius').innerHTML = O.RADII.map(k =>
+      '<button type="button" class="area" data-radius="' + k + '" aria-pressed="' + (r === k) + '">' + k + 'km以内</button>').join('');
+    $('sort').innerHTML = [['rec', 'おすすめ順'], ['near', '近い順']].map(([v, l]) =>
+      '<button type="button" class="area area-sub" data-sort="' + v + '" aria-pressed="' + (state.sort === v) + '">' + l + '</button>').join('');
+    $('saved-count').textContent = O.getSaved().length;
+    $('saved-toggle').setAttribute('aria-pressed', state.savedOnly);
+    $('radius').hidden = state.savedOnly;
+  }
+
+  function currentList() {
+    const loc = O.getLoc();
+    let list = source().filter(s => matches(s));
+    if (state.savedOnly) {
+      if (loc && state.sort === 'near') list.sort((a, b) => a.dist - b.dist);
+    } else {
+      list = O.sortSpots(list, state.sort, O.getRadius());
     }
+    return list;
   }
 
-  async function gotLoc(loc) {
-    O.setLoc(loc);
-    await bot('<b>' + O.esc(loc.label) + '</b> だね。まわり' + O.getRadius() + 'kmで さがしてみる…', true);
-    search();
+  function renderGrid() {
+    const loc = O.getLoc();
+    const grid = $('grid');
+    $('more').hidden = true;
+    $('spots-heading').textContent = state.savedOnly ? '行きたいリスト' : '近くのスポット';
+    $('spots-sub').textContent = state.savedOnly ? 'この端末に保存' : (loc ? O.getRadius() + 'km以内' : '');
+
+    if (!state.savedOnly) {
+      if (!loc) {
+        $('result-note').textContent = '';
+        grid.innerHTML = '<div class="prompt"><b>まず、いまいる場所を決めよう</b>' +
+          '<p>上の「現在地にする」を押すか、駅名・地名か都道府県を入れると、まわりのスポットがここに並びます。</p></div>';
+        return;
+      }
+      if (loading) {
+        $('result-note').textContent = '';
+        grid.innerHTML = '<div class="prompt loading"><span class="spinner" aria-hidden="true"></span><b>探しています…</b><p>はじめての場所は10〜20秒かかることがあります。</p></div>';
+        return;
+      }
+      if (errorMsg) {
+        $('result-note').textContent = '';
+        grid.innerHTML = '<div class="prompt"><b>スポットを取得できませんでした</b><p>' + O.esc(errorMsg) + '</p><button type="button" class="more" id="retry">もう一度探す</button></div>';
+        $('retry').addEventListener('click', search);
+        return;
+      }
+    }
+
+    const list = currentList();
+    const shown = list.slice(0, state.shown);
+    grid.innerHTML = shown.map(s => O.spotCard(s)).join('');
+    $('more').hidden = list.length <= state.shown;
+    let note = list.length + '件';
+    if (state.tag !== 'all') note = O.TAG_MAP[state.tag].label + '・' + note;
+    if (state.q) note = '「' + state.q + '」' + note;
+    $('result-note').textContent = list.length ? note : '';
+    if (!list.length) {
+      grid.innerHTML = '<p class="empty">' + (state.savedOnly && !O.getSaved().length
+        ? '行きたいリストは空です。スポットの「行きたい」を押すと追加されます。'
+        : '条件に合うスポットはありません。ジャンルを変えるか、範囲を広げてください。') + '</p>';
+      return;
+    }
+    // 説明と写真をあとから入れる
+    const seq = searchSeq;
+    O.enrich(shown).then(changed => { if (changed && seq === searchSeq) O.refreshCards(grid, shown); });
   }
+
+  function renderSeason() {
+    const loc = O.getLoc();
+    O.loadCurated().then(cur => {
+      const m = O.nowMonth();
+      const list = cur.filter(s => O.inSeason(s, m) && (!loc || O.distanceKm(loc, s) <= 150));
+      if (!list.length || !loc) { $('season').hidden = true; return; }
+      $('season-title').textContent = m + '月が見頃';
+      O.register(list);
+      $('season-row').innerHTML = list.map(s => {
+        const t = O.primaryTag(s);
+        return '<a class="mini" href="map.html?id=' + encodeURIComponent(s.id) + '" data-jump="' + s.id + '" style="--c:' + t.color + '">' +
+                    '<span class="mini-area">' + O.esc(O.prefShort(s.pref)) + ' ' + O.esc(O.distText(O.distanceKm(loc, s))) + '</span>' +
+          '<b>' + O.esc(s.name) + '</b>' +
+          '<span class="mini-when">' + O.esc(O.seasonText(s.best)) + '</span></a>';
+      }).join('');
+      $('season').hidden = false;
+    });
+  }
+
+  function renderAll() { renderTabs(); renderTools(); renderGrid(); }
 
   async function search() {
     const loc = O.getLoc();
+    const seq = ++searchSeq;
+    errorMsg = '';
+    if (!loc) { spots = []; renderAll(); return; }
+    loading = true; state.shown = PAGE; renderAll();
     try {
-      spots = await O.searchSpots(loc, O.getRadius());
+      const list = await O.searchSpots(loc, O.getRadius());
+      if (seq !== searchSeq) return;
+      spots = list;
     } catch (e) {
-      await bot(O.esc(e.message));
-      choices([
-        { label: 'もう一回さがして', go: search },
-        { label: '場所を変える', go: () => askLoc('どこで さがす？') }
-      ]);
-      return;
+      if (seq !== searchSeq) return;
+      spots = []; errorMsg = e.message;
     }
-    if (!spots.length) {
-      await bot('ごめん、このまわりには 見つからなかった。');
-      const items = [];
-      if (O.getRadius() < 30) items.push({ label: '30kmまで広げて', go: widen });
-      items.push({ label: '場所を変える', go: () => askLoc('どこで さがす？') });
-      choices(items);
-      return;
-    }
-    askMood();
+    loading = false;
+    renderAll();
   }
 
-  async function widen() {
-    O.setRadius(30);
-    await bot('30kmまで 広げて さがすね…', true);
-    search();
-  }
-
-  /* ---------- 気分 ---------- */
-  async function askMood(text) {
-    const n = spots.length;
-    await bot(text || '近くに <b>' + n + 'か所</b> あったよ。どんな気分？');
-    const items = O.TAGS.filter(t => t.id !== 'all')
-      .map(t => ({ t, n: spots.filter(s => s.tags.includes(t.id)).length }))
-      .filter(x => x.n > 0)
-      .map(x => ({ label: x.t.id === 'ame' ? '雨でもOKなところ' : x.t.label, n: x.n, go: () => onMood(x.t.id, x.t.label) }));
-    items.push({ label: 'おまかせ', main: true, go: () => onMood('any', 'おまかせ') });
-    choices(items);
-  }
-
-  // 有名なところ・見頃・近いところが先に来やすいように、少しだけばらつかせて並べる
-  function arrange(list) {
-    const km = O.getRadius();
-    const w = s => Math.pow(1 + Math.max(0, s.score), 1.6) * (O.inSeason(s) ? 2 : 1) * (O.isSaved(s.id) ? 1.5 : 1) / (1 + s.dist / (km / 2));
-    const pool = list.map(s => ({ s, k: Math.pow(Math.random(), 1 / w(s)) }));
-    return pool.sort((a, b) => b.k - a.k).map(x => x.s);
-  }
-
-  function onMood(tag, label) {
-    moodLabel = tag === 'any' ? '' : label;
-    queue = arrange(tag === 'any' ? spots : spots.filter(s => s.tags.includes(tag)));
-    idx = 0;
-    suggest('じゃあ ここは どう？');
-  }
-
-  /* ---------- 提案 ---------- */
-  async function showSpot(s, text) {
-    const row = await bot(text + O.spotCard(s));
-    O.enrich([s]).then(changed => { if (changed) O.refreshCards(row, [s]); });
-  }
-
-  async function suggest(text) {
-    const s = queue[idx];
-    await showSpot(s, text);
-    afterSpot();
-  }
-
-  function afterSpot() {
-    const s = queue[idx];
-    const items = [];
-    if (idx < queue.length - 1) items.push({ label: 'ほかのにする', say: 'ほかのは？', main: true, go: () => { idx++; suggest(pick(['それなら こっちは？', 'ここも いいよ', 'こんなのも あるよ'])); } });
-    else items.push({ label: 'ほかのにする', say: 'ほかのは？', main: true, go: outOfIdeas });
-    items.push({ label: 'そのあと寄れるところは？', go: () => after(s) });
-    if (queue.length > 1) items.push({ label: 'ぜんぶ見せて', n: queue.length, go: showAll });
-    items.push({ label: '気分を変える', go: () => askMood('どんな気分にする？') });
-    items.push({ label: '場所を変える', go: () => askLoc('どこで さがす？') });
-    choices(items);
-  }
-
-  async function outOfIdeas() {
-    await bot((moodLabel ? '「' + O.esc(moodLabel) + '」のところは' : 'このまわりは') + ' これで ぜんぶ見せたよ。');
-    const items = [{ label: 'さいしょから見る', go: () => { idx = 0; suggest('もう一回、これから。'); } }];
-    if (O.getRadius() < 30) items.push({ label: '30kmまで広げて', go: widen });
-    items.push({ label: '気分を変える', go: () => askMood('どんな気分にする？') });
-    items.push({ label: '場所を変える', go: () => askLoc('どこで さがす？') });
-    choices(items);
-  }
-
-  // 次に寄れる場所（昼の場所なら夜景、夜の場所ならその前に行ける場所）
-  function nextStop(main) {
-    const isNight = x => (x.when || []).some(w => w === '夕方' || w === '夜');
-    const near = spots
-      .filter(x => x.id !== main.id && x.score >= 1)
-      .map(x => ({ s: x, d: O.distanceKm(main, x) }))
-      .filter(x => x.d <= 3)
-      .sort((a, b) => (a.d - a.s.score * 0.2) - (b.d - b.s.score * 0.2));
-    if (!near.length) return null;
-    if (!isNight(main)) {
-      const n = near.find(x => x.s.tags.includes('yakei'));
-      if (n) return Object.assign({ label: '暗くなったら' }, n);
-    } else {
-      const d = near.find(x => !x.s.tags.includes('yakei'));
-      if (d) return Object.assign({ label: 'その前に' }, d);
-    }
-    return Object.assign({ label: 'すぐそばに' }, near[0]);
-  }
-
-  async function after(main) {
-    const n = nextStop(main);
-    if (!n) await bot('歩いて行けるところには、ほかに なさそう。');
-    else await showSpot(n.s, n.label + '、<b>' + O.esc(n.s.name) + '</b> も近いよ（そこから' + O.esc(O.distText(n.d)) + '）');
-    afterSpot();
-  }
-
-  async function showAll() {
-    const sorted = queue.map((s, i) => ({ s, i })).sort((a, b) => a.s.dist - b.s.dist);
-    const html = (moodLabel ? '「' + O.esc(moodLabel) + '」のところ、' : '') + '近い順に ならべたよ。気になるのを押してね。' +
-      '<ol class="pick-list">' + sorted.map(x =>
-        '<li><button type="button" data-pick="' + x.i + '"><span>' + O.esc(x.s.name) + '</span><em>' + O.esc(O.distText(x.s.dist)) + '</em></button></li>').join('') + '</ol>';
-    await bot(html);
-    afterSpot();
-  }
-
-  log.addEventListener('click', e => {
-    const b = e.target.closest('[data-pick]');
-    if (!b || !queue.length) return;
-    const i = Number(b.dataset.pick);
-    if (!queue[i]) return;
-    clearChoices(); me(queue[i].name);
-    idx = i;
-    suggest('ここだね。');
+  $('tabs').addEventListener('click', e => {
+    const b = e.target.closest('[data-tag]'); if (!b) return;
+    state.tag = b.dataset.tag; state.shown = PAGE; renderTabs(); renderGrid();
   });
+  $('radius').addEventListener('click', e => {
+    const b = e.target.closest('[data-radius]'); if (!b) return;
+    O.setRadius(Number(b.dataset.radius));
+  });
+  $('sort').addEventListener('click', e => {
+    const b = e.target.closest('[data-sort]'); if (!b) return;
+    state.sort = b.dataset.sort; state.shown = PAGE; renderTools(); renderGrid();
+  });
+  $('saved-toggle').addEventListener('click', () => { state.savedOnly = !state.savedOnly; state.shown = PAGE; renderAll(); });
+  $('more').addEventListener('click', () => { state.shown += PAGE; renderGrid(); });
+  let qTimer;
+  $('q').addEventListener('input', e => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; renderTabs(); renderGrid(); }, 150);
+  });
+  $('search-form').addEventListener('submit', e => { e.preventDefault(); $('q').blur(); });
+  document.addEventListener('saved-change', () => { renderTools(); if (state.savedOnly) { renderTabs(); renderGrid(); } });
+  document.addEventListener('loc-change', () => { state.savedOnly = false; newsScope = 'pref'; search(); renderSeason(); loadNewsScope(); });
+  document.addEventListener('radius-change', search);
 
-  /* ---------- はじまり ---------- */
-  async function start() {
-    const h = new Date().getHours();
-    const hello = h < 10 ? 'おはよう。' : h < 18 ? 'こんにちは。' : 'こんばんは。';
-    const loc = O.getLoc();
-    await bot(hello + '近くの デートスポット、いっしょに さがそう。', true);
-    if (loc) {
-      await bot('前は <b>' + O.esc(loc.label) + '</b> で さがしてたね。今日も そこにする？');
-      choices([
-        { label: 'うん、そこで', main: true, go: () => gotLoc(loc) },
-        { label: 'ほかの場所にする', go: () => askLoc('いま どのへん？') }
-      ]);
-    } else {
-      askLoc();
-    }
-  }
-  start();
-
-  /* ---------- 行きたいリスト ---------- */
-  function renderSaved() {
-    const list = O.getSavedList();
-    const loc = O.getLoc();
-    $('saved-count').textContent = list.length;
-    O.register(list);
-    $('saved-list').innerHTML = list.length ? list.map(s => {
-      const d = loc ? O.distText(O.distanceKm(loc, s)) : '';
-      return '<li><div class="memo-main"><b>' + O.esc(s.name) + '</b><span>' + O.esc([s.kind, O.prefShort(s.pref), d].filter(Boolean).join('・')) + '</span></div>' +
-        '<div class="memo-acts">' + O.saveButton(s) + '<a href="map.html?id=' + encodeURIComponent(s.id) + '">地図</a>' +
-        '<a href="' + O.gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ</a></div></li>';
-    }).join('') : '<li class="empty">まだ ありません。会話で出てきたスポットの「行きたい」を押すと、ここに書きこまれます。</li>';
-  }
-  document.addEventListener('saved-change', renderSaved);
-  renderSaved();
+  renderSeason();
+  search();
 
   /* ---------- おでかけニュース ---------- */
   const NEWS_CATS = [
@@ -277,7 +183,7 @@
     { id: 'kanko', label: '観光' }
   ];
   const CAT_LABEL = Object.fromEntries(NEWS_CATS.map(c => [c.id, c.label]));
-  const NPAGE = 10;
+  const NPAGE = 12;
   let news = [], newsCat = 'all', newsScope = 'pref', newsShown = NPAGE;
 
   function ago(iso) {
@@ -289,6 +195,7 @@
   }
   function itemPref(x) {
     if (x.pref !== undefined) return x.pref;
+    // 東海だけを集めていたころの記事
     return { '名古屋': '愛知県', '愛知': '愛知県', '岐阜': '岐阜県', '三重': '三重県' }[x.area] || '';
   }
   function scoped() {
@@ -296,23 +203,32 @@
     if (newsScope === 'pref' && loc) return news.filter(x => itemPref(x) === loc.pref);
     return news;
   }
-  function renderNewsAll() {
+  function loadNewsScope() {
     const loc = O.getLoc();
     const n = loc ? news.filter(x => itemPref(x) === loc.pref).length : 0;
-    if (!loc || (newsScope === 'pref' && !n && news.length)) newsScope = 'all';
-    $('news-scope').innerHTML = (loc ? '<button type="button" class="tab" data-scope="pref" aria-pressed="' + (newsScope === 'pref') + '">' + O.esc(O.prefShort(loc.pref)) + ' <small>' + n + '</small></button>' : '') +
-      '<button type="button" class="tab" data-scope="all" aria-pressed="' + (newsScope === 'all') + '">全国 <small>' + news.length + '</small></button>';
+    if (!loc) newsScope = 'all';
+    else if (newsScope === 'pref' && !n && news.length) newsScope = 'all';
+    $('news-scope').innerHTML = (loc ? '<button type="button" class="nf" data-scope="pref" aria-pressed="' + (newsScope === 'pref') + '">' + O.esc(O.prefShort(loc.pref)) + ' <small>' + n + '</small></button>' : '') +
+      '<button type="button" class="nf" data-scope="all" aria-pressed="' + (newsScope === 'all') + '">全国 <small>' + news.length + '</small></button>';
+    renderNewsFilter(); renderNews();
+  }
+  function renderNewsFilter() {
     const src = scoped();
     $('news-filter').innerHTML = NEWS_CATS.map(c => {
-      const k = c.id === 'all' ? src.length : src.filter(x => x.category === c.id).length;
-      return '<button type="button" class="tab" data-cat="' + c.id + '" aria-pressed="' + (newsCat === c.id) + '">' + c.label + ' <small>' + k + '</small></button>';
+      const n = c.id === 'all' ? src.length : src.filter(x => x.category === c.id).length;
+      return '<button type="button" class="nf nf-sub" data-cat="' + c.id + '" aria-pressed="' + (newsCat === c.id) + '">' + c.label + ' <small>' + n + '</small></button>';
     }).join('');
-    const list = src.filter(x => newsCat === 'all' || x.category === newsCat);
-    $('news-list').innerHTML = list.slice(0, newsShown).map(x =>
-      '<li class="cat-' + O.esc(x.category) + '"><a href="' + O.esc(x.link) + '" target="_blank" rel="noopener">' +
-        '<span class="news-meta"><span class="news-cat">' + O.esc(CAT_LABEL[x.category] || '観光') + '</span>' +
-        '<span>' + O.esc(itemPref(x) ? O.prefShort(itemPref(x)) : '全国') + '</span><span>' + ago(x.published) + '</span><span>' + O.esc(x.source) + '</span></span>' +
-        '<b class="news-title">' + O.esc(x.title) + '</b></a></li>').join('');
+  }
+  function renderNews() {
+    const list = scoped().filter(x => newsCat === 'all' || x.category === newsCat);
+    $('news-list').innerHTML = list.slice(0, newsShown).map(x => {
+      const where = itemPref(x) ? O.prefShort(itemPref(x)) : '全国';
+      return '<li class="news-item cat-' + O.esc(x.category) + '"><a href="' + O.esc(x.link) + '" target="_blank" rel="noopener">' +
+        (x.image ? '<img src="' + O.esc(x.image) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '') +
+        '<span class="news-body"><span class="news-meta"><span class="news-cat">' + O.esc(CAT_LABEL[x.category] || '観光') + '</span><span>' + O.esc(where) + '</span><span>' + ago(x.published) + '</span></span>' +
+        '<b class="news-title">' + O.esc(x.title) + '</b>' +
+        '<span class="news-src">' + O.esc(x.source) + '</span></span></a></li>';
+    }).join('');
     $('news-more').hidden = list.length <= newsShown;
     $('news-status').hidden = list.length > 0;
     if (!list.length) $('news-status').textContent = news.length ? 'この条件のニュースはありません。' : 'ニュースはまだありません。';
@@ -320,14 +236,13 @@
 
   $('news-scope').addEventListener('click', e => {
     const b = e.target.closest('[data-scope]'); if (!b) return;
-    newsScope = b.dataset.scope; newsShown = NPAGE; renderNewsAll();
+    newsScope = b.dataset.scope; newsShown = NPAGE; loadNewsScope();
   });
   $('news-filter').addEventListener('click', e => {
     const b = e.target.closest('[data-cat]'); if (!b) return;
-    newsCat = b.dataset.cat; newsShown = NPAGE; renderNewsAll();
+    newsCat = b.dataset.cat; newsShown = NPAGE; renderNewsFilter(); renderNews();
   });
-  $('news-more').addEventListener('click', () => { newsShown += NPAGE; renderNewsAll(); });
-  document.addEventListener('loc-change', () => { newsScope = 'pref'; renderNewsAll(); renderSaved(); });
+  $('news-more').addEventListener('click', () => { newsShown += NPAGE; renderNews(); });
 
   fetch('data/news.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
     news = d.items || [];
@@ -335,6 +250,6 @@
       const u = new Date(d.updated);
       $('news-updated').textContent = (u.getMonth() + 1) + '月' + u.getDate() + '日 ' + u.getHours() + ':' + String(u.getMinutes()).padStart(2, '0') + ' 更新（6時間ごと）';
     }
-    renderNewsAll();
+    loadNewsScope();
   }).catch(() => { $('news-status').textContent = 'ニュースを読み込めませんでした。再読み込みしてください。'; });
 })();

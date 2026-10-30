@@ -180,20 +180,20 @@
     el.classList.add('locbar');
     el.innerHTML =
       '<div class="loc-now">' + icon('all', 'loc-pin') +
-        '<span class="loc-text"><small>さがす場所</small><b class="loc-label">未設定</b></span></div>' +
+        '<span class="loc-text"><small>いまここ →</small><b class="loc-label">まだ決まってない</b></span></div>' +
       '<div class="loc-actions">' +
-        '<button type="button" class="loc-btn loc-gps">' + icon('gps', 'ic-s') + '現在地</button>' +
+        '<button type="button" class="loc-btn loc-gps">現在地にする</button>' +
         '<label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-pref">都道府県</label>' +
         '<select class="loc-pref" id="' + (opts.idPrefix || 'lb') + '-pref"><option value="">都道府県からえらぶ</option>' +
           PREFS.map(p => '<option value="' + p[0] + '">' + p[0] + '</option>').join('') + '</select>' +
         '<form class="loc-search" role="search"><label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-q">地名・駅名</label>' +
-          '<input id="' + (opts.idPrefix || 'lb') + '-q" type="search" placeholder="地名・駅名" enterkeyhint="search" autocomplete="off">' +
+          '<input id="' + (opts.idPrefix || 'lb') + '-q" type="search" placeholder="駅名・地名で探す" enterkeyhint="search" autocomplete="off">' +
           '<button type="submit" class="loc-btn">さがす</button></form>' +
       '</div>';
     const label = el.querySelector('.loc-label');
     function show() {
       const loc = getLoc();
-      label.textContent = loc ? loc.label : '未設定';
+      label.textContent = loc ? loc.label : 'まだ決まってない';
       el.classList.toggle('is-empty', !loc);
       el.querySelector('.loc-pref').value = '';
     }
@@ -478,7 +478,8 @@
   function spotCard(s, opts) {
     opts = opts || {};
     const t = primaryTag(s);
-    const head = [s.dist != null ? distText(s.dist) : '', s.kind || '', prefShort(s.pref)].filter(Boolean).join('・');
+    const head = [s.kind || '', prefShort(s.pref)].filter(Boolean).join('・');
+    const dist = s.dist != null ? '<em class="spot-dist">' + distText(s.dist) + '</em>' : '';
     const flags = (inSeason(s) ? '<span class="flag">いま見頃</span>' : '') + (s.curated ? '<span class="flag">おすすめ</span>' : '');
     const facts = [];
     if (s.stay) facts.push('滞在 ' + esc(s.stay));
@@ -490,7 +491,7 @@
     return '' +
       '<article class="spot" style="--c:' + t.color + '" data-id="' + esc(s.id) + '">' +
         (s.img ? '<div class="spot-img"><img src="' + esc(s.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>' : '') +
-        '<p class="spot-kind">' + esc(head) + flags + '</p>' +
+        '<p class="spot-kind"><span>' + esc(head) + flags + '</span>' + dist + '</p>' +
         '<h3 class="spot-name">' + esc(s.name) + '</h3>' +
         (s.desc ? '<p class="spot-desc">' + esc(s.desc) + ' ' + wikiLink + '</p>' : '') +
         (s.tip ? '<p class="spot-tip">' + esc(s.tip) + '</p>' : '') +

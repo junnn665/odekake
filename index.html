@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>おでかけ日和</title>
-<meta name="description" content="いまいる場所と気分を答えると、近くのデートスポットを1つずつ教えてくれるサイト。全国どこでも使えます">
+<meta name="description" content="ふたりで行きたい場所を、近くから探す。全国どこでも、いまいる場所のまわりのデートスポットをまとめて見られます">
 <meta name="theme-color" content="#FDFCF6">
 <meta property="og:title" content="おでかけ日和">
-<meta property="og:description" content="いまいる場所と気分から、近くのデートスポットを探す">
+<meta property="og:description" content="ふたりで行きたい場所、近くから探す。">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
@@ -22,34 +22,53 @@
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<header class="site-header">
-  <div class="wrap header-inner">
-    <h1 class="logo"><a href="./">おでかけ日和</a></h1>
-    <nav class="header-links" aria-label="ほかのページ">
-      <a href="#saved">行きたい <span id="saved-count">0</span></a>
-      <a href="map.html">地図</a>
-      <a href="gacha.html">ガチャ</a>
-    </nav>
-  </div>
+<header class="wrap top">
+  <h1 class="logo"><a href="./">おでかけ日和</a></h1>
+  <p class="tagline">ふたりで行きたい場所、近くから探す。</p>
+  <nav class="top-links" aria-label="ほかのページ">
+    <a href="gacha.html">迷ったらガチャ</a>
+    <a href="map.html">地図で見る</a>
+  </nav>
 </header>
 
 <main class="wrap main">
-  <section class="chat" aria-label="日和との会話">
-    <div class="log" id="chat" aria-live="polite"></div>
-    <div class="choices" id="choices"></div>
+  <div id="locbar" class="where"></div>
+
+  <section class="season" id="season" aria-labelledby="season-title" hidden>
+    <h2 class="hand-h" id="season-title">いまが見頃</h2>
+    <div class="season-row" id="season-row"></div>
   </section>
 
-  <section class="notebook" id="saved" aria-labelledby="saved-heading">
-    <h2 id="saved-heading"><span>行きたいリスト</span></h2>
-    <ul class="memo-list" id="saved-list"></ul>
+  <section aria-labelledby="spots-heading">
+    <div class="sec-head">
+      <h2 class="hand-h" id="spots-heading">近くのスポット</h2>
+      <span class="sec-sub" id="spots-sub"></span>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="気分"></nav>
+    <div class="tools">
+      <form class="search" id="search-form" role="search">
+        <label class="visually-hidden" for="q">しぼりこむ</label>
+        <input type="search" id="q" placeholder="しぼりこむ（水族館、城など）" autocomplete="off" enterkeyhint="search">
+      </form>
+      <div class="tool-row">
+        <div class="areas" id="radius" role="group" aria-label="範囲"></div>
+        <div class="areas" id="sort" role="group" aria-label="並び順"></div>
+        <button type="button" class="saved-toggle" id="saved-toggle" aria-pressed="false"><span>行きたい</span> <span class="saved-count" id="saved-count">0</span></button>
+      </div>
+    </div>
+    <p class="result-note" id="result-note"></p>
+    <div class="grid" id="grid"></div>
+    <button type="button" class="more" id="more" hidden>もっと見る</button>
   </section>
 
-  <section class="notebook" aria-labelledby="news-heading">
-    <h2 id="news-heading"><span>おでかけニュース</span></h2>
-    <p class="note" id="news-updated"></p>
+  <section class="news" aria-labelledby="news-heading">
+    <div class="sec-head">
+      <h2 class="hand-h" id="news-heading">おでかけニュース</h2>
+      <span class="sec-sub" id="news-updated"></span>
+    </div>
     <div class="tabs" id="news-scope" role="group" aria-label="地域"></div>
     <div class="tabs tabs-sub" id="news-filter" role="group" aria-label="ニュースの種類"></div>
-    <p class="note" id="news-status">読み込み中…</p>
+    <p class="status" id="news-status">読み込み中…</p>
     <ul class="news-list" id="news-list"></ul>
     <button type="button" class="more" id="news-more" hidden>もっと見る</button>
   </section>

@@ -3,14 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>おでかけ日和｜東海・名古屋のデート＆観光スポットまとめ</title>
-<meta name="description" content="夜景、絶景、街歩き、雨の日でも楽しめる場所。東海・名古屋のデートスポットと観光スポットをまとめ、おでかけニュースを1時間ごとに自動で集める非公式サイト">
+<title>おでかけ日和｜全国どこでも、近くのデート＆観光スポット</title>
+<meta name="description" content="いる場所のまわりの夜景、絶景、水族館、美術館、歴史スポットを地図データから探して提案。全国のおでかけニュースも1時間ごとに自動でまとめる非公式サイト">
 <meta name="theme-color" content="#FF7A59">
 <meta property="og:title" content="おでかけ日和">
-<meta property="og:description" content="東海・名古屋のデート＆観光スポットまとめ">
+<meta property="og:description" content="全国どこでも、近くのデート＆観光スポットを探せるサイト">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="おでかけ日和">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -20,7 +25,7 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <div>
-      <p class="tagline">東海・名古屋のデート＆観光スポットまとめ</p>
+      <p class="tagline">全国どこでも、近くのデート＆観光スポット</p>
       <h1 class="logo"><a href="./">おでかけ<span>日和</span></a></h1>
     </div>
     <p class="update-note">ニュースは1時間ごとに自動更新</p>
@@ -29,15 +34,17 @@
 </header>
 
 <main class="wrap main">
+  <div id="locbar"></div>
+
   <div class="entries">
     <a class="entry entry-gacha" href="gacha.html">
       <span class="entry-machine" aria-hidden="true"><i style="--c:#D9466F"></i><i style="--c:#4338A8"></i><i style="--c:#2E7D4F"></i></span>
-      <span class="entry-text"><small>週末どこ行く？ 迷ったら</small><b>デートガチャを回す</b><span>エリア・気分・天気を選ぶと、行き先と「次に寄る場所」を提案します</span></span>
+      <span class="entry-text"><small>今日どこ行く？ 迷ったら</small><b>デートガチャを回す</b><span>気分・天気・時間帯を選ぶと、近くの行き先と「次に寄る場所」を提案します</span></span>
       <span class="entry-arrow" aria-hidden="true">→</span>
     </a>
     <a class="entry entry-map" href="map.html">
       <span class="entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span>
-      <span class="entry-text"><b>スポットマップ</b><span>近くにあるスポットをまとめて地図で見る</span></span>
+      <span class="entry-text"><b>スポットマップ</b><span>まわりのスポットを地図で。動かした先でも探せます</span></span>
       <span class="entry-arrow" aria-hidden="true">→</span>
     </a>
   </div>
@@ -45,31 +52,34 @@
   <section class="season" id="season" aria-labelledby="season-heading" hidden>
     <div class="sec-head">
       <h2 id="season-heading"><span class="leaf" aria-hidden="true">🍁</span><span id="season-title">いまが見頃</span></h2>
-      <span class="sec-sub">この時期にこそ行きたい場所</span>
+      <span class="sec-sub">編集部のおすすめから、この時期にこそ行きたい場所</span>
     </div>
     <div class="season-row" id="season-row"></div>
   </section>
 
   <section aria-labelledby="spots-heading">
     <div class="sec-head">
-      <h2 id="spots-heading">スポットをさがす</h2>
+      <h2 id="spots-heading">近くのスポット</h2>
+      <span class="sec-sub" id="spots-sub"></span>
     </div>
     <nav class="tabs" id="tabs" aria-label="気分"></nav>
 
     <div class="tools">
       <form class="search" id="search-form" role="search">
-        <label class="visually-hidden" for="q">キーワードで探す</label>
+        <label class="visually-hidden" for="q">スポット名で絞り込む</label>
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-        <input type="search" id="q" placeholder="水族館、紅葉、犬山…" autocomplete="off" enterkeyhint="search">
+        <input type="search" id="q" placeholder="水族館、城、公園…で絞り込む" autocomplete="off" enterkeyhint="search">
       </form>
       <div class="tool-row">
-        <div class="areas" id="areas" role="group" aria-label="エリア"></div>
+        <div class="areas" id="radius" role="group" aria-label="範囲"></div>
+        <div class="areas" id="sort" role="group" aria-label="並び順"></div>
         <button type="button" class="saved-toggle" id="saved-toggle" aria-pressed="false"><span>行きたい</span> <span class="saved-count" id="saved-count">0</span></button>
       </div>
     </div>
 
     <p class="result-note" id="result-note"></p>
     <div class="grid" id="grid"></div>
+    <button type="button" class="more" id="more" hidden>もっと見る</button>
   </section>
 
   <section class="news" aria-labelledby="news-heading">
@@ -77,7 +87,8 @@
       <h2 id="news-heading">おでかけニュース</h2>
       <span class="sec-sub" id="news-updated"></span>
     </div>
-    <p class="lead">イベント、新スポット、イルミネーションや紅葉の便り。東海エリアの話題をニュースサイトから1時間ごとに自動で集めます。</p>
+    <p class="lead">イベント、新スポット、イルミネーションや紅葉の便り。全国の話題をニュースサイトから1時間ごとに自動で集めます。</p>
+    <div class="news-filter" id="news-scope" role="group" aria-label="地域"></div>
     <div class="news-filter" id="news-filter" role="group" aria-label="ニュースの種類"></div>
     <p class="status" id="news-status">ニュースを読み込み中…</p>
     <ul class="news-list" id="news-list"></ul>
@@ -87,7 +98,8 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>営業時間・料金・休業日は変わることがあります。お出かけ前に公式サイトでご確認ください。ニュースは見出しのみで、詳細は出典元のページをご覧ください。掲載施設とは関係のない個人の非公式サイトです。</p>
+    <p>スポットは OpenStreetMap の地図データから自動で探し、説明と写真は Wikipedia から引用しています。営業時間・料金・休業日は変わることがあるので、お出かけ前に公式サイトでご確認ください。ニュースは見出しのみで、詳細は出典元のページをご覧ください。掲載施設とは関係のない個人の非公式サイトです。</p>
+    <p>地図データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>／位置の検索 国土地理院</p>
     <p>© おでかけ日和</p>
   </div>
 </footer>

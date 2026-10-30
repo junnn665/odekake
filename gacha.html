@@ -4,10 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>デートガチャ｜おでかけ日和</title>
-<meta name="description" content="エリア・気分・天気・時間帯を選ぶと、東海・名古屋のデートスポットと次に寄る場所を提案します">
+<meta name="description" content="いる場所・気分・天気・時間帯を選ぶと、近くのデートスポットと次に寄る場所を提案します。全国どこでも使えます">
 <meta name="theme-color" content="#1F2A44">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="おでかけ日和">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -24,31 +29,33 @@
 
 <main class="wrap gacha-main">
   <div class="gacha-panel">
-    <fieldset class="field"><legend>エリア</legend><div class="seg" id="g-area"></div></fieldset>
+    <div id="locbar" class="locbar-compact"></div>
+    <fieldset class="field"><legend>範囲</legend><div class="seg" id="g-radius"></div></fieldset>
     <fieldset class="field"><legend>気分</legend><div class="seg" id="g-tag"></div></fieldset>
     <fieldset class="field"><legend>天気</legend><div class="seg" id="g-weather"></div></fieldset>
     <fieldset class="field"><legend>時間帯</legend><div class="seg" id="g-when"></div></fieldset>
-    <fieldset class="field"><legend>予算</legend><div class="seg" id="g-budget"></div></fieldset>
+    <fieldset class="field"><legend>どんな場所</legend><div class="seg" id="g-fame"></div></fieldset>
 
     <div class="machine" id="machine" aria-hidden="true">
       <div class="machine-dome" id="dome"></div>
       <div class="machine-body"><span class="knob"></span></div>
     </div>
-    <button type="button" class="spin-btn" id="spin">ガチャを回す</button>
+    <button type="button" class="spin-btn" id="spin" disabled>ガチャを回す</button>
     <p class="pool-note" id="pool-note"></p>
   </div>
 
   <section class="result" id="result" aria-live="polite">
     <div class="result-placeholder">
       <b>今日はどこへ行こう？</b>
-      条件を選んでガチャを回すと、行き先と「そのあと寄れる近くの場所」を出します。
+      さがす場所と条件を選んでガチャを回すと、行き先と「そのあと寄れる近くの場所」を出します。
     </div>
   </section>
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>営業時間・料金・休業日は変わることがあります。お出かけ前に公式サイトでご確認ください。</p>
+    <p>スポットは OpenStreetMap の地図データから自動で探しています。営業時間・料金・休業日は変わることがあるので、お出かけ前に公式サイトでご確認ください。</p>
+    <p>地図データ © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>／位置の検索 国土地理院</p>
     <p>© おでかけ日和</p>
   </div>
 </footer>

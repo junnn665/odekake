@@ -417,3 +417,86 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ===== さがす場所のバー ===== */
+.locbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding: 12px 14px; background: var(--paper);
+  border: 2px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--coral);
+}
+.locbar.is-empty { box-shadow: 4px 4px 0 var(--rose); animation: nudge 1.6s ease-in-out 2; }
+@keyframes nudge { 50% { transform: translateY(-2px); } }
+.loc-now { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 220px; }
+.loc-pin { width: 26px; height: 26px; color: var(--coral); flex-shrink: 0; }
+.loc-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.loc-text small { font-size: 11px; font-weight: 700; color: var(--muted); }
+.loc-label { font-size: 17px; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.locbar.is-empty .loc-label { color: var(--rose); }
+.loc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1 1 420px; }
+.loc-btn {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  padding: 7px 14px; font-size: 14px; font-weight: 900; color: #fff;
+  background: var(--ink); border: 2px solid var(--ink); border-radius: 999px;
+}
+.loc-btn:disabled { opacity: .6; cursor: default; }
+.loc-gps { background: var(--coral); border-color: var(--coral); }
+.loc-pref {
+  padding: 7px 10px; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink);
+  background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; max-width: 150px;
+}
+.loc-search { display: flex; gap: 6px; flex: 1 1 200px; min-width: 0; }
+.loc-search input {
+  flex: 1; min-width: 0; padding: 7px 12px; font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--ground); border: 2px solid var(--line); border-radius: 999px;
+}
+.locbar-compact { padding: 10px 12px; box-shadow: none; border-width: 2px; }
+.locbar-compact .loc-label { font-size: 15px; }
+.gacha-panel .locbar { box-shadow: none; border-color: var(--line); border-radius: 12px; }
+
+/* ===== 状態表示 ===== */
+.prompt {
+  grid-column: 1 / -1; padding: 32px 20px; text-align: center; color: var(--sub);
+  background: var(--paper); border: 2px dashed var(--line); border-radius: 14px;
+}
+.prompt b { display: block; font-size: 18px; color: var(--ink); margin-bottom: 6px; }
+.prompt p { margin: 0; font-size: 14px; }
+.prompt .more { margin-top: 14px; }
+.spinner {
+  display: block; width: 34px; height: 34px; margin: 0 auto 12px;
+  border: 4px solid var(--line); border-top-color: var(--coral); border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.area-sub { border-style: dashed; }
+.nf-sub { font-size: 13px; padding: 4px 12px; border-width: 1.5px; }
+#news-scope { margin-bottom: 6px; }
+
+/* ===== カードの追加部品 ===== */
+.badge-pick {
+  flex-shrink: 0; font-size: 11px; font-weight: 900; padding: 1px 8px; border-radius: 999px;
+  background: var(--ink); color: #fff;
+}
+.ticket-img { aspect-ratio: 16 / 9; max-height: 220px; overflow: hidden; background: var(--line); border-bottom: 2px solid var(--ink); }
+.ticket-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.src-link { font-size: 11px; color: var(--muted); text-decoration: underline; margin-left: 2px; }
+
+/* ===== 地図の追加部品 ===== */
+.map-bar .locbar { margin-bottom: 8px; }
+.map-tools { align-items: center; }
+.map-tools .area { padding: 4px 12px; font-size: 13px; }
+.map-status { font-size: 12px; font-weight: 700; color: var(--muted); }
+.map-wrap { position: relative; flex: 1; display: flex; min-height: 300px; }
+.map-wrap #map { flex: 1; }
+.here-btn {
+  position: absolute; z-index: 1000; left: 50%; top: 12px; transform: translateX(-50%);
+  padding: 9px 18px; font-size: 14px; font-weight: 900; color: #fff;
+  background: var(--coral); border: 2px solid var(--ink); border-radius: 999px; box-shadow: 3px 3px 0 var(--ink);
+}
+.pin { position: relative; }
+.pin.big { width: 36px; height: 36px; }
+.pin.big svg { width: 19px; height: 19px; }
+.pop-img { display: block; width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+@media (max-width: 600px) {
+  .map-bar .locbar .loc-actions { flex-basis: 100%; }
+  .loc-pref { max-width: 150px; }
+}

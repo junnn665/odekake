@@ -4,10 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>スポットマップ｜おでかけ日和</title>
-<meta name="description" content="東海・名古屋のデート＆観光スポットを地図で見る">
+<meta name="description" content="全国どこでも、まわりのデート＆観光スポットを地図で探す">
 <meta name="theme-color" content="#1F2A44">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="おでかけ日和">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
@@ -24,14 +29,19 @@
 </header>
 <div class="map-bar">
   <div class="wrap">
+    <div id="locbar" class="locbar-compact"></div>
     <nav class="tabs" id="tabs" aria-label="気分"></nav>
     <div class="map-tools">
+      <div class="areas" id="radius" role="group" aria-label="範囲"></div>
       <button type="button" class="saved-toggle" id="saved-toggle" aria-pressed="false"><span>行きたいだけ</span> <span class="saved-count" id="saved-count">0</span></button>
-      <button type="button" class="locate-btn" id="locate">現在地</button>
+      <span class="map-status" id="map-status" role="status"></span>
     </div>
   </div>
 </div>
-<div id="map" role="region" aria-label="スポットの地図"></div>
+<div class="map-wrap">
+  <div id="map" role="region" aria-label="スポットの地図"></div>
+  <button type="button" class="here-btn" id="here" hidden>この辺りで探す</button>
+</div>
 
 <script src="assets/vendor/leaflet/leaflet.js"></script>
 <script src="assets/common.js"></script>

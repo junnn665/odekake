@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#2B3A67"/>
+  <stop offset=".28" stop-color="#7A4E86"/>
+  <stop offset=".55" stop-color="#FF7A59"/>
+  <stop offset=".8" stop-color="#FFB45E"/>
+ </linearGradient>
+ <radialGradient id="sun" cx=".5" cy=".5" r=".5">
+  <stop offset="0" stop-color="#FFF4D6"/><stop offset=".7" stop-color="#FFE0A3"/><stop offset="1" stop-color="#FFD08A"/>
+ </radialGradient>
+ <linearGradient id="pin" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFEFE6"/>
+ </linearGradient>
+ <clipPath id="c"><rect width="512" height="512"/></clipPath>
+</defs>
+<g clip-path="url(#c)">
+ <rect width="512" height="512" fill="url(#sky)"/>
+ <circle cx="256" cy="372" r="118" fill="url(#sun)" opacity=".95"/>
+ <g fill="#fff">
+  <circle cx="92" cy="96" r="4"/><circle cx="420" cy="78" r="5"/><circle cx="452" cy="170" r="3"/><circle cx="64" cy="190" r="3"/>
+  <path d="M392 120l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/>
+ </g>
+ <path fill="#1F2A44" d="M0 512V420h26v-18h22v18h18v-44h26v136h10v-74h30v-22h20v96h14V352h8v-30h4v30h10v160h16v-82h28v82h14v-70h34v70h10v-52h22v-22h16v74h18v-96h10v-28l14-10 14 10v28h10v124h14v-84h26v84h14v-62h28v62h14v-110h24v110h12v-72h22v-16h18v88h16v-60h26v60z"/>
+ <path fill="#FFD27A" opacity=".9" d="M130 448h6v8h-6zM130 466h6v8h-6zM278 430h6v8h-6zM278 450h6v8h-6zM298 450h6v8h-6zM376 438h6v8h-6zM392 458h6v8h-6zM70 470h6v8h-6zM444 476h6v8h-6z"/>
+ <g transform="translate(256 228)">
+  <path d="M0 132C-18 104-96 30-96-38a96 96 0 0 1 192 0C96 30 18 104 0 132z" fill="#1F2A44" opacity=".25" transform="translate(6 8)"/>
+  <path d="M0 132C-18 104-96 30-96-38a96 96 0 0 1 192 0C96 30 18 104 0 132z" fill="url(#pin)" stroke="#1F2A44" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M0 22C-14 12-50-10-50-40a26 26 0 0 1 50-10a26 26 0 0 1 50 10C50-10 14 12 0 22z" fill="#D9466F"/>
+  <path d="M-30-48a12 12 0 0 1 14-6" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".8"/>
+ </g>
+</g>
+</svg>

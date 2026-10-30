@@ -180,15 +180,15 @@
     el.classList.add('locbar');
     el.innerHTML =
       '<div class="loc-now">' + icon('all', 'loc-pin') +
-        '<span class="loc-text"><small>どこから探す？</small><b class="loc-label">未設定</b></span></div>' +
+        '<span class="loc-text"><small>さがす場所</small><b class="loc-label">未設定</b></span></div>' +
       '<div class="loc-actions">' +
         '<button type="button" class="loc-btn loc-gps">' + icon('gps', 'ic-s') + '現在地</button>' +
         '<label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-pref">都道府県</label>' +
-        '<select class="loc-pref" id="' + (opts.idPrefix || 'lb') + '-pref"><option value="">都道府県</option>' +
+        '<select class="loc-pref" id="' + (opts.idPrefix || 'lb') + '-pref"><option value="">都道府県からえらぶ</option>' +
           PREFS.map(p => '<option value="' + p[0] + '">' + p[0] + '</option>').join('') + '</select>' +
         '<form class="loc-search" role="search"><label class="visually-hidden" for="' + (opts.idPrefix || 'lb') + '-q">地名・駅名</label>' +
           '<input id="' + (opts.idPrefix || 'lb') + '-q" type="search" placeholder="地名・駅名" enterkeyhint="search" autocomplete="off">' +
-          '<button type="submit" class="loc-btn">探す</button></form>' +
+          '<button type="submit" class="loc-btn">さがす</button></form>' +
       '</div>';
     const label = el.querySelector('.loc-label');
     function show() {
@@ -478,33 +478,26 @@
   function spotCard(s, opts) {
     opts = opts || {};
     const t = primaryTag(s);
-    const where = [prefShort(s.pref), s.city].filter(Boolean).join(' ');
-    const flags = (inSeason(s) ? '<span class="flag flag-season">見頃</span>' : '') + (s.curated ? '<span class="flag">おすすめ</span>' : '');
+    const head = [s.dist != null ? distText(s.dist) : '', s.kind || '', prefShort(s.pref)].filter(Boolean).join('・');
+    const flags = (inSeason(s) ? '<span class="flag">いま見頃</span>' : '') + (s.curated ? '<span class="flag">おすすめ</span>' : '');
     const facts = [];
     if (s.stay) facts.push('滞在 ' + esc(s.stay));
     if (s.when && s.when.length) facts.push(esc(s.when.join('・')));
     if (s.budget != null) facts.push(BUDGET[s.budget]);
     if (s.curated && s.best && s.best.length) facts.push('見頃 ' + esc(seasonText(s.best)));
     const wikiLink = s.descSrc === 'wiki' && s.wikiTitle
-      ? ' <a class="src-link" href="https://ja.wikipedia.org/wiki/' + encodeURIComponent(s.wikiTitle) + '" target="_blank" rel="noopener">Wikipedia</a>' : '';
-    const dist = s.dist != null ? distText(s.dist) : '';
-    const distHtml = dist ? '<p class="spot-dist">' + dist.replace(/(km|m)$/, '<small>$1</small>') + '</p>' : '';
+      ? '<a class="src-link" href="https://ja.wikipedia.org/wiki/' + encodeURIComponent(s.wikiTitle) + '" target="_blank" rel="noopener">Wikipedia</a>' : '';
     return '' +
       '<article class="spot" style="--c:' + t.color + '" data-id="' + esc(s.id) + '">' +
-        '<div class="spot-mark" title="' + esc(t.label) + '">' + icon(t.id) + '</div>' +
-        '<div class="spot-main">' +
-          '<p class="spot-kind">' + esc(s.kind || '') + (where ? '<span>' + esc(where) + '</span>' : '') + flags + '</p>' +
-          '<h3 class="spot-name">' + esc(s.name) + '</h3>' +
-          (s.desc ? '<p class="spot-desc">' + esc(s.desc) + wikiLink + '</p>' : '') +
-          (s.tip ? '<p class="spot-tip">' + esc(s.tip) + '</p>' : '') +
-          (facts.length ? '<p class="spot-facts">' + facts.join('<span class="sep">／</span>') + '</p>' : '') +
-          '<div class="spot-actions">' + saveButton(s) +
-            (opts.noMapLink ? '' : '<a class="act-link" href="map.html?id=' + encodeURIComponent(s.id) + '">地図</a>') +
-            '<a class="act-link" href="' + gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ</a>' +
-          '</div>' +
-        '</div>' +
-        '<div class="spot-side">' + distHtml +
-          (s.img ? '<div class="spot-img"><img src="' + esc(s.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>' : '') +
+        (s.img ? '<div class="spot-img"><img src="' + esc(s.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>' : '') +
+        '<p class="spot-kind">' + esc(head) + flags + '</p>' +
+        '<h3 class="spot-name">' + esc(s.name) + '</h3>' +
+        (s.desc ? '<p class="spot-desc">' + esc(s.desc) + ' ' + wikiLink + '</p>' : '') +
+        (s.tip ? '<p class="spot-tip">' + esc(s.tip) + '</p>' : '') +
+        (facts.length ? '<p class="spot-facts">' + facts.join('　') + '</p>' : '') +
+        '<div class="spot-actions">' + saveButton(s) +
+          (opts.noMapLink ? '' : '<a class="act-link" href="map.html?id=' + encodeURIComponent(s.id) + '">地図</a>') +
+          '<a class="act-link" href="' + gmapUrl(s) + '" target="_blank" rel="noopener">Googleマップ</a>' +
         '</div>' +
       '</article>';
   }

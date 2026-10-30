@@ -94,8 +94,8 @@
     if (circle) { circle.remove(); circle = null; }
     if (meMarker) { meMarker.remove(); meMarker = null; }
     if (!loc) return;
-    circle = L.circle([loc.lat, loc.lng], { radius: O.getRadius() * 1000, color: '#FF7A59', weight: 2, fillOpacity: 0.04, dashArray: '6 6', interactive: false }).addTo(map);
-    meMarker = L.circleMarker([loc.lat, loc.lng], { radius: 8, color: '#fff', weight: 3, fillColor: '#1D6FA8', fillOpacity: 1 }).addTo(map).bindTooltip(loc.label);
+    circle = L.circle([loc.lat, loc.lng], { radius: O.getRadius() * 1000, color: '#E0513E', weight: 2, fillOpacity: 0.03, dashArray: '6 6', interactive: false }).addTo(map);
+    meMarker = L.circleMarker([loc.lat, loc.lng], { radius: 8, color: '#fff', weight: 3, fillColor: '#2F6CA8', fillOpacity: 1 }).addTo(map).bindTooltip(loc.label);
   }
 
   async function search() {

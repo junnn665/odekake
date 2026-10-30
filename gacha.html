@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>デートガチャ｜おでかけ日和</title>
+<meta name="description" content="エリア・気分・天気・時間帯を選ぶと、東海・名古屋のデートスポットと次に寄る場所を提案します">
+<meta name="theme-color" content="#1F2A44">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="sub-header">
+  <div class="wrap">
+    <a class="back" href="./">← トップ</a>
+    <h1 class="sub-title">デートガチャ</h1>
+    <span class="sub-logo">おでかけ日和</span>
+  </div>
+</header>
+
+<main class="wrap gacha-main">
+  <div class="gacha-panel">
+    <fieldset class="field"><legend>エリア</legend><div class="seg" id="g-area"></div></fieldset>
+    <fieldset class="field"><legend>気分</legend><div class="seg" id="g-tag"></div></fieldset>
+    <fieldset class="field"><legend>天気</legend><div class="seg" id="g-weather"></div></fieldset>
+    <fieldset class="field"><legend>時間帯</legend><div class="seg" id="g-when"></div></fieldset>
+    <fieldset class="field"><legend>予算</legend><div class="seg" id="g-budget"></div></fieldset>
+
+    <div class="machine" id="machine" aria-hidden="true">
+      <div class="machine-dome" id="dome"></div>
+      <div class="machine-body"><span class="knob"></span></div>
+    </div>
+    <button type="button" class="spin-btn" id="spin">ガチャを回す</button>
+    <p class="pool-note" id="pool-note"></p>
+  </div>
+
+  <section class="result" id="result" aria-live="polite">
+    <div class="result-placeholder">
+      <b>今日はどこへ行こう？</b>
+      条件を選んでガチャを回すと、行き先と「そのあと寄れる近くの場所」を出します。
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>営業時間・料金・休業日は変わることがあります。お出かけ前に公式サイトでご確認ください。</p>
+    <p>© おでかけ日和</p>
+  </div>
+</footer>
+
+<script src="assets/common.js"></script>
+<script src="assets/gacha.js"></script>
+</body>
+</html>

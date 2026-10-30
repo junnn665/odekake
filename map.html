@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>スポットマップ｜おでかけ日和</title>
+<meta name="description" content="東海・名古屋のデート＆観光スポットを地図で見る">
+<meta name="theme-color" content="#1F2A44">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="map-page">
+<header class="sub-header">
+  <div class="wrap">
+    <a class="back" href="./">← トップ</a>
+    <h1 class="sub-title">スポットマップ</h1>
+    <span class="sub-logo">おでかけ日和</span>
+  </div>
+</header>
+<div class="map-bar">
+  <div class="wrap">
+    <nav class="tabs" id="tabs" aria-label="気分"></nav>
+    <div class="map-tools">
+      <button type="button" class="saved-toggle" id="saved-toggle" aria-pressed="false"><span>行きたいだけ</span> <span class="saved-count" id="saved-count">0</span></button>
+      <button type="button" class="locate-btn" id="locate">現在地</button>
+    </div>
+  </div>
+</div>
+<div id="map" role="region" aria-label="スポットの地図"></div>
+
+<script src="assets/vendor/leaflet/leaflet.js"></script>
+<script src="assets/common.js"></script>
+<script src="assets/map.js"></script>
+</body>
+</html>

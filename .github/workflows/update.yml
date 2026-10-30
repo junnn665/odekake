@@ -1,0 +1,62 @@
+name: ニュース更新と公開
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # 毎時17分（UTC）に実行
+  push:
+    branches: [main]
+  workflow_dispatch:        # Actions画面から手動でも実行できる
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: おでかけニュースを取得
+        run: python scripts/fetch_news.py
+
+      - name: 変更があれば保存
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/news.json
+          if git diff --cached --quiet; then
+            echo "変更なし"
+          else
+            git commit -m "ニュースを更新 $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      # スマホに古いファイルが残らないよう、読み込むファイルに版番号をつける
+      - name: ファイルに版番号をつける
+        run: |
+          V="${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}"
+          sed -i -E "s#(assets/[a-z]+\.(js|css))\"#\1?v=${V}\"#g" index.html map.html gacha.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

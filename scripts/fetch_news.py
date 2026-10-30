@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """おでかけ日和: 全国のおでかけニュースを集めて data/news.json を更新する。
 
-GitHub Actions から1時間ごとに実行される。標準ライブラリだけで動く。
+GitHub Actions から6時間ごとに実行される。標準ライブラリだけで動く。
 
 取得元
   - Bing ニュース RSS（キーワード検索。記事への直リンクとサムネイルが取れる）
   - Google ニュース RSS（キーワード検索。件数の補完用）
 
-全国共通のキーワードは毎回、都道府県ごとのキーワードは1回に12県ずつ順番に
-（4時間で47都道府県をひと回り）検索して、検索サイトへの負担を抑える。
+毎回、全国共通のキーワードと47都道府県すべてのキーワードを検索する。
+検索サイトへの負担を抑えるため、同時に問い合わせるのは4件まで。
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ NOW = dt.datetime.now(dt.timezone.utc)
 KEEP_DAYS = 21      # この日数より古い記事は消す
 INGEST_DAYS = 10    # この日数より古い記事は新しく取り込まない
 MAX_ITEMS = 1500    # 保存する最大件数
-PREFS_PER_RUN = 12  # 1回の実行で検索する都道府県の数
+PREFS_PER_RUN = 47  # 1回の実行で検索する都道府県の数（47ですべて。減らすと順番に回す）
 
 UA = "Mozilla/5.0 (compatible; OdekakeBiyoriBot/1.0) Python-urllib"
 
@@ -317,7 +317,7 @@ def main() -> int:
     items = {it["id"]: migrate(it) for it in old.get("items", [])}
     seen_keys = {norm_key(it["title"]) for it in items.values()}
 
-    # 都道府県は1時間ごとに12県ずつ順番に
+    # PREFS_PER_RUN が47未満なら、実行のたびに順番に回す
     hour = int(NOW.timestamp() // 3600)
     start = (hour % ((len(PREFS) + PREFS_PER_RUN - 1) // PREFS_PER_RUN)) * PREFS_PER_RUN
     run_prefs = PREFS[start:start + PREFS_PER_RUN]

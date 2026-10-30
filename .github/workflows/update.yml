@@ -2,7 +2,7 @@ name: ニュース更新と公開
 
 on:
   schedule:
-    - cron: "17 * * * *"   # 毎時17分（UTC）に実行
+    - cron: "17 0,6,12,18 * * *"   # 6時間ごと（日本時間 3:17・9:17・15:17・21:17）に実行
   push:
     branches: [main]
   workflow_dispatch:        # Actions画面から手動でも実行できる
